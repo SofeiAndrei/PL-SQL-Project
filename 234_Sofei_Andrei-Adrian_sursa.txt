@@ -1,0 +1,921 @@
+--4
+CREATE TABLE Regiune(
+  cod_regiune number(3) primary key,
+  nume_regiune varchar2(20) not null,
+  inamic_principal VARCHAR2(20) check(inamic_principal in('Germania','Italia','România+Bulgaria','Japonia',NULL)),
+  unique(nume_regiune)
+);
+CREATE TABLE Tara(
+  cod_tara number(3) primary key,
+  nume_tara varchar2(30) not null,
+  cod_regiune number(3) not null,
+  foreign key(cod_regiune) references Regiune(cod_regiune) on delete CASCADE,
+  unique(nume_tara)
+);
+CREATE TABLE Oras(
+  cod_oras number(3) primary key,
+  nume_oras varchar2(20) not null,
+  zona_de_conflict varchar2(2) not null check(zona_de_conflict in('Da','Nu')),
+  cod_tara number(3) not null,
+  foreign key(cod_tara) references Tara(cod_tara) on delete CASCADE,
+  unique(nume_oras)
+);
+CREATE TABLE Pluton(
+  cod_pluton number(3) primary key,
+  numar_pluton number(2) not null,
+  cod_oras number(3) not null,
+  foreign key(cod_oras) references Oras(cod_oras) on delete CASCADE,
+  unique(numar_pluton)
+);
+CREATE TABLE Rang(
+  cod_rang number(3) primary key,
+  nume_rang varchar2(20) not null check(nume_rang in('soldat','soldat prima clasa','caporal','sergent','prim sergent','locotenent','capitan','maior')),
+  salariu number(5) not null,
+  unique(nume_rang)
+);
+CREATE TABLE Medalie(
+  cod_medalie number(3) primary key,
+  nume_medalie varchar2(30) not null,
+  conditie_dobandire varchar2(15) not null check(conditie_dobandire in('curaj','eroism','ranit/decedat')),
+  unique(nume_medalie)
+);
+CREATE TABLE Munitie(
+  cod_munitie number(3) primary key,
+  nume_munitie varchar2(20) not null,
+  calibru varchar2(20) not null,
+  numar_de_gloante number(4) not null,
+  unique(nume_munitie)
+);
+CREATE TABLE Arma(
+  cod_arma number(3) primary key,
+  nume_model varchar2(20) not null,
+  calibru varchar2(20) not null,
+  cod_tara number(3) not null,
+  foreign key(cod_tara) references Tara(cod_tara) on delete CASCADE,
+  unique(nume_model)
+);
+CREATE TABLE Echipament(
+  cod_echipament number(3) primary key,
+  nume_echipament varchar2(20) not null,
+  numar_grenade number(1) default (2),
+  cod_arma number(3) not null,
+  foreign key(cod_arma) references Arma(cod_arma) on delete CASCADE,
+  unique(nume_echipament)
+);
+CREATE TABLE Soldat(
+  cod_soldat number(3) primary key,
+  nume varchar2(20) not null,
+  prenume varchar2(20) not null,
+  data_inrolare date not null,
+  varsta number(2),
+  cod_pluton number(3) not null,
+  cod_superior_direct number(3),
+  cod_echipament number(3) not null,
+  cod_rang number(3) not null,
+  foreign key(cod_pluton) references Pluton(cod_pluton) on delete CASCADE,
+  foreign key(cod_superior_direct) references Soldat(cod_soldat) on delete set NULL,
+  foreign key(cod_echipament) references Echipament(cod_echipament) on delete CASCADE,
+  foreign key(cod_rang) references Rang(cod_rang) on delete CASCADE,
+  unique(nume, prenume)
+);
+CREATE TABLE Utilizeaza(
+  cod_arma number(3),
+  cod_munitie number(3),
+  primary key(cod_arma, cod_munitie),
+  foreign key(cod_arma) references Arma(cod_arma) on delete CASCADE,
+  foreign key(cod_munitie) references Munitie(cod_munitie) on delete CASCADE
+);
+CREATE TABLE A_fost_decorat_cu(
+  cod_medalie number(3),
+  cod_soldat number(3),
+  data_acordare date not null,
+  primary key(cod_medalie, cod_soldat),
+  foreign key(cod_medalie) references Medalie(cod_medalie)  on delete CASCADE,
+  foreign key(cod_soldat) references Soldat(cod_soldat) on delete CASCADE
+);
+
+create sequence incrementare_cod_regiune
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_tara
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_oras
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_pluton
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_rang
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_medalie
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_munitie
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_arma
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_echipament
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+create sequence incrementare_cod_soldat
+  increment by 1
+  start with 1
+  nocycle
+  nocache;
+
+--5
+insert into Regiune values(incrementare_cod_regiune.nextval,'America de Nord',NULL);
+insert into Regiune values(incrementare_cod_regiune.nextval,'Africa de Nord','Italia');
+insert into Regiune values(incrementare_cod_regiune.nextval,'Europa de Vest','Germania');
+insert into Regiune values(incrementare_cod_regiune.nextval,'Europa de Sud','Italia');
+insert into Regiune values(incrementare_cod_regiune.nextval,'Peninsula Balcanică','România+Bulgaria');
+insert into Regiune values(incrementare_cod_regiune.nextval,'Asia','Japonia');
+
+insert into Tara values(incrementare_cod_tara.nextval,'Statele Unite ale Americii',1);
+insert into Tara values(incrementare_cod_tara.nextval,'Canada',1);
+insert into Tara values(incrementare_cod_tara.nextval,'Libia',2);
+insert into Tara values(incrementare_cod_tara.nextval,'Tunisia',2);
+insert into Tara values(incrementare_cod_tara.nextval,'Algeria',2);
+insert into Tara values(incrementare_cod_tara.nextval,'Belgia',3);
+insert into Tara values(incrementare_cod_tara.nextval,'Olanda',3);
+insert into Tara values(incrementare_cod_tara.nextval,'Franța',3);
+insert into Tara values(incrementare_cod_tara.nextval,'Italia',4);
+insert into Tara values(incrementare_cod_tara.nextval,'Grecia',5);
+insert into Tara values(incrementare_cod_tara.nextval,'Filipine',6);
+insert into Tara values(incrementare_cod_tara.nextval,'Japonia',6);
+insert into Tara values(incrementare_cod_tara.nextval,'Singapore',6);
+insert into Tara values(incrementare_cod_tara.nextval,'Indonezia',6);
+insert into Tara values(incrementare_cod_tara.nextval,'Papua Noua Guinee',6);
+insert into Tara values(incrementare_cod_tara.nextval,'Regatul Unit',3);
+insert into Tara values(incrementare_cod_tara.nextval,'Germania',3);
+
+insert into Munitie values(incrementare_cod_munitie.nextval,'.303 British','.303',300);
+insert into Munitie values(incrementare_cod_munitie.nextval,'.45 ACP','.45',300);
+insert into Munitie values(incrementare_cod_munitie.nextval,'.30 Carbine','.30',160);
+insert into Munitie values(incrementare_cod_munitie.nextval,'.30-06 Springfield','.30',100);
+insert into Munitie values(incrementare_cod_munitie.nextval,'.50 BMG','.50',5000);
+insert into Munitie values(incrementare_cod_munitie.nextval,'9mm Parabellum','9mm',360);
+
+insert into Medalie values(incrementare_cod_medalie.nextval,'Medal of Honor','curaj');
+insert into Medalie values(incrementare_cod_medalie.nextval,'Distinguished Service Cross','eroism');
+insert into Medalie values(incrementare_cod_medalie.nextval,'Silver Star','curaj');
+insert into Medalie values(incrementare_cod_medalie.nextval,'Bronze Star','curaj');
+insert into Medalie values(incrementare_cod_medalie.nextval,'Purple Heart','ranit/decedat');
+
+insert into Rang values(incrementare_cod_rang.nextval,'soldat',50);
+insert into Rang values(incrementare_cod_rang.nextval,'soldat prima clasa',55);
+insert into Rang values(incrementare_cod_rang.nextval,'caporal',65);
+insert into Rang values(incrementare_cod_rang.nextval,'sergent',80);
+insert into Rang values(incrementare_cod_rang.nextval,'prim sergent',140);
+insert into Rang values(incrementare_cod_rang.nextval,'locotenent',165);
+insert into Rang values(incrementare_cod_rang.nextval,'capitan',200);
+insert into Rang values(incrementare_cod_rang.nextval,'maior',250);
+
+insert into Arma values(incrementare_cod_arma.nextval,'Colt M1911','.45',1);
+insert into Arma values(incrementare_cod_arma.nextval,'Thompson M1A1','.45',1);
+insert into Arma values(incrementare_cod_arma.nextval,'M3A1 "Grease Gun"','.45',1);
+insert into Arma values(incrementare_cod_arma.nextval,'M1 Carbine','.30',1);
+insert into Arma values(incrementare_cod_arma.nextval,'M1 Garand','.30',1);
+insert into Arma values(incrementare_cod_arma.nextval,'Springfield M1903','.30',1);
+insert into Arma values(incrementare_cod_arma.nextval,'M1918A2 BAR','.30',1);
+insert into Arma values(incrementare_cod_arma.nextval,'M2 Browning','.50',1);
+insert into Arma values(incrementare_cod_arma.nextval,'Sten','9mm',16);
+insert into Arma values(incrementare_cod_arma.nextval,'Bren','.303',16);
+
+insert into Echipament values(incrementare_cod_echipament.nextval,'Medic',0,1);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Lunetist',1,6);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Mitralior',0,8);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Infanterist v1',2,5);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Infanterist v2',2,4);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Infanterist v3',3,3);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Infanterist v4',3,7);
+insert into Echipament values(incrementare_cod_echipament.nextval,'Infanterist v5',3,2);
+
+insert into Utilizeaza values(1,2);
+insert into Utilizeaza values(2,2);
+insert into Utilizeaza values(3,2);
+insert into Utilizeaza values(3,6);
+insert into Utilizeaza values(4,3);
+insert into Utilizeaza values(5,4);
+insert into Utilizeaza values(6,4);
+insert into Utilizeaza values(7,4);
+insert into Utilizeaza values(8,5);
+insert into Utilizeaza values(9,6);
+insert into Utilizeaza values(10,1);
+
+insert into Oras values(incrementare_cod_oras.nextval,'Washington','Nu',1);
+insert into Oras values(incrementare_cod_oras.nextval,'New York','Nu',1);
+insert into Oras values(incrementare_cod_oras.nextval,'Ottawa','Nu',2);
+insert into Oras values(incrementare_cod_oras.nextval,'Quebec','Nu',2);
+insert into Oras values(incrementare_cod_oras.nextval,'Tripoli','Da',3);
+insert into Oras values(incrementare_cod_oras.nextval,'Tunis','Da',4);
+insert into Oras values(incrementare_cod_oras.nextval,'Algiers','Da',5);
+insert into Oras values(incrementare_cod_oras.nextval,'Bruxel','Da',6);
+insert into Oras values(incrementare_cod_oras.nextval,'Liege','Da',6);
+insert into Oras values(incrementare_cod_oras.nextval,'Amsterdam','Da',7);
+insert into Oras values(incrementare_cod_oras.nextval,'Eindhoven','Da',7);
+insert into Oras values(incrementare_cod_oras.nextval,'Paris','Nu',8);
+insert into Oras values(incrementare_cod_oras.nextval,'Caen','Da',8);
+insert into Oras values(incrementare_cod_oras.nextval,'Napoli','Da',9);
+insert into Oras values(incrementare_cod_oras.nextval,'Roma','Da',9);
+insert into Oras values(incrementare_cod_oras.nextval,'Salonic','Da',10);
+insert into Oras values(incrementare_cod_oras.nextval,'Manila','Da',11);
+insert into Oras values(incrementare_cod_oras.nextval,'Okinawa','Da',12);
+insert into Oras values(incrementare_cod_oras.nextval,'Singapore','Da',13);
+insert into Oras values(incrementare_cod_oras.nextval,'Jakarta','Da',14);
+insert into Oras values(incrementare_cod_oras.nextval,'Port Moresby','Nu',15);
+insert into Oras values(incrementare_cod_oras.nextval,'Londra','Nu',16);
+insert into Oras values(incrementare_cod_oras.nextval,'Cologne','Da',17);
+insert into Oras values(incrementare_cod_oras.nextval,'Frankfurt','Da',17);
+
+insert into Pluton values(incrementare_cod_pluton.nextval,11,6);
+insert into Pluton values(incrementare_cod_pluton.nextval,12,11);
+insert into Pluton values(incrementare_cod_pluton.nextval,13,16);
+insert into Pluton values(incrementare_cod_pluton.nextval,21,14);
+insert into Pluton values(incrementare_cod_pluton.nextval,22,24);
+insert into Pluton values(incrementare_cod_pluton.nextval,23,18);
+
+insert into Soldat values(incrementare_cod_soldat.nextval,'Sofei','Andrei-Adrian',to_date('16-04-1920','dd-mm-yyyy'),51,1,NULL,8,8);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Sherman','Fred',to_date('08-05-1927','dd-mm-yyyy'),47,2,1,5,7);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Howells','Benjamin',to_date('28-10-1929','dd-mm-yyyy'),37,3,1,6,7);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Warner','Jacob',to_date('01-01-1933','dd-mm-yyyy'),41,4,1,7,7);
+insert into Soldat values(incrementare_cod_soldat.nextval,'King','Douglas',to_date('05-01-1933','dd-mm-yyyy'),39,5,1,8,7);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Bright','Alex',to_date('01-06-1934','dd-mm-yyyy'),44,6,1,5,7);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Walton','Simon',to_date('29-04-1930','dd-mm-yyyy'),41,1,1,8,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Warren','Josh',to_date('29-09-1930','dd-mm-yyyy'),36,2,2,7,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Flynn','Scott',to_date('10-07-1931','dd-mm-yyyy'),34,3,3,8,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Torres','Marco',to_date('22-07-1932','dd-mm-yyyy'),33,4,4,5,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Whittle','Benjamin',to_date('05-06-1933','dd-mm-yyyy'),29,5,5,4,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Ferguson','Patrick',to_date('09-11-1933','dd-mm-yyyy'),27,6,6,5,6);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Barnes','Tyler',to_date('22-02-1934','dd-mm-yyyy'),28,1,7,7,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Wilkins','Jacob',to_date('15-12-1935','dd-mm-yyyy'),31,2,8,8,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Watson','Scott',to_date('11-04-1937','dd-mm-yyyy'),30,3,9,4,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Gordon','Josh',to_date('06-05-1937','dd-mm-yyyy'),28,4,10,5,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Banks','Robbie',to_date('21-09-1938','dd-mm-yyyy'),29,5,11,5,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Caldwell','Josh',to_date('27-04-1939','dd-mm-yyyy'),27,6,12,4,5);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Stuart','Mason',to_date('10-07-1935','dd-mm-yyyy'),27,1,13,4,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Smith','Tobias',to_date('25-07-1937','dd-mm-yyyy'),26,1,13,5,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Ferguson','Jeremy',to_date('01-09-1938','dd-mm-yyyy'),28,2,14,7,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hubbard','Tyler',to_date('09-03-1939','dd-mm-yyyy'),31,2,14,8,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Porter','Scott',to_date('30-05-1939','dd-mm-yyyy'),23,3,15,6,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Woods','Glenn',to_date('28-04-1941','dd-mm-yyyy'),24,3,15,5,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Morgan','Gerald',to_date('20-10-1941','dd-mm-yyyy'),23,4,16,4,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Lawson','David',to_date('08-09-1942','dd-mm-yyyy'),22,5,17,4,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Wagner','Tony',to_date('25-11-1942','dd-mm-yyyy'),26,6,18,4,4);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hardy','Fred',to_date('09-02-1938','dd-mm-yyyy'),23,1,1,1,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Peterson','Jacob',to_date('31-05-1938','dd-mm-yyyy'),21,1,1,2,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Mueller','Mason',to_date('05-06-1938','dd-mm-yyyy'),20,1,19,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Carter','Scott',to_date('17-06-1938','dd-mm-yyyy'),24,1,20,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Campbell','Marco',to_date('24-06-1938','dd-mm-yyyy'),22,2,21,7,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Vaughn','Douglas',to_date('21-10-1938','dd-mm-yyyy'),23,2,21,5,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Wolf','Lawrence',to_date('19-07-1939','dd-mm-yyyy'),21,2,22,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Walters','Tobias',to_date('11-09-1939','dd-mm-yyyy'),22,3,23,5,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Bush','Patrick',to_date('23-05-1940','dd-mm-yyyy'),24,3,23,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Graves','Glenn',to_date('27-10-1940','dd-mm-yyyy'),26,3,24,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Perkins','Zack',to_date('13-02-1941','dd-mm-yyyy'),24,4,25,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Smith','Jeremy',to_date('08-08-1941','dd-mm-yyyy'),27,4,25,7,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hardy','Robbie',to_date('25-06-1942','dd-mm-yyyy'),25,5,26,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Chapman','Jacob',to_date('05-12-1942','dd-mm-yyyy'),20,5,26,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Daniels','Melvin',to_date('19-09-1941','dd-mm-yyyy'),23,6,27,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Reyes','Gerald',to_date('06-05-1942','dd-mm-yyyy'),26,6,27,4,3);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Campbell','Tony',to_date('24-10-1942','dd-mm-yyyy'),22,1,1,3,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Thompson','Aron',to_date('27-12-1942','dd-mm-yyyy'),19,2,2,1,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Fernandez','Lawrence',to_date('26-11-1940','dd-mm-yyyy'),21,3,3,1,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Mcdonald','Mason',to_date('07-09-1939','dd-mm-yyyy'),23,1,30,7,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Burns','David',to_date('03-06-1941','dd-mm-yyyy'),20,2,2,3,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Morgan','Zack',to_date('07-09-1940','dd-mm-yyyy'),21,3,3,3,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Woods','Isaac',to_date('27-12-1942','dd-mm-yyyy'),18,4,38,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Peterson','Fred',to_date('08-01-1939','dd-mm-yyyy'),24,1,30,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Chapman','Scott',to_date('18-03-1940','dd-mm-yyyy'),22,1,30,6,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Stevenson','Douglas',to_date('11-03-1941','dd-mm-yyyy'),23,1,31,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Owens','Glenn',to_date('27-09-1942','dd-mm-yyyy'),21,1,31,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hart','Scott',to_date('25-12-1942','dd-mm-yyyy'),20,2,32,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hardy','David',to_date('11-03-1942','dd-mm-yyyy'),18,2,32,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Norris','Simon',to_date('15-10-1942','dd-mm-yyyy'),19,2,33,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Barker','Tomas',to_date('27-12-1939','dd-mm-yyyy'),24,2,34,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Peterson','Melvin',to_date('04-09-1940','dd-mm-yyyy'),25,3,35,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Castro','Josh',to_date('28-10-1942','dd-mm-yyyy'),23,3,35,6,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Higgins','Robbie',to_date('27-12-1942','dd-mm-yyyy'),20,3,36,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Klein','Mason',to_date('15-10-1941','dd-mm-yyyy'),21,3,37,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Cunningham','Jon',to_date('07-09-1940','dd-mm-yyyy'),22,4,38,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Smith','Isaac',to_date('04-05-1941','dd-mm-yyyy'),21,4,38,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Hansen','Aron',to_date('11-03-1943','dd-mm-yyyy'),19,4,39,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Johnson','Zack',to_date('15-10-1941','dd-mm-yyyy'),19,4,39,6,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Ramirez','Marco',to_date('28-10-1942','dd-mm-yyyy'),18,5,40,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Stevenson','Scott',to_date('04-05-1941','dd-mm-yyyy'),20,5,40,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Castro','Tony',to_date('04-09-1940','dd-mm-yyyy'),23,5,41,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Higgins','Douglas',to_date('28-01-1939','dd-mm-yyyy'),26,5,41,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Matthews','Gerald',to_date('07-06-1942','dd-mm-yyyy'),24,6,42,5,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Houston','Alex',to_date('27-12-1939','dd-mm-yyyy'),26,6,42,6,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Frost','Zack',to_date('04-05-1940','dd-mm-yyyy'),25,6,43,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Montgomery','David',to_date('07-06-1942','dd-mm-yyyy'),21,6,43,4,2);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Wright','Kristian',to_date('07-09-1939','dd-mm-yyyy'),21,1,30,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Blithe','Oliver',to_date('04-09-1940','dd-mm-yyyy'),23,1,30,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Klein','Jon',to_date('11-03-1941','dd-mm-yyyy'),20,1,30,3,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Cunningham','Stefan',to_date('07-06-1942','dd-mm-yyyy'),21,1,31,5,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Johnson','Lawrence',to_date('04-05-1940','dd-mm-yyyy'),22,1,31,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Morgan','Tomas',to_date('07-06-1942','dd-mm-yyyy'),22,2,32,6,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Owens','Jon',to_date('27-09-1942','dd-mm-yyyy'),21,2,32,5,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Powers','Robbie',to_date('28-01-1942','dd-mm-yyyy'),19,2,33,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Matthews','Zack',to_date('28-10-1942','dd-mm-yyyy'),20,2,34,6,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Wright','Tony',to_date('15-10-1941','dd-mm-yyyy'),24,3,35,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Todd','Mason',to_date('04-05-1940','dd-mm-yyyy'),19,3,36,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Turner','Alex',to_date('28-10-1942','dd-mm-yyyy'),20,3,36,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Ryan','Stefan',to_date('07-06-1942','dd-mm-yyyy'),21,3,37,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Daniel','Charles',to_date('27-09-1942','dd-mm-yyyy'),21,4,38,6,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Knight','Alan',to_date('28-10-1942','dd-mm-yyyy'),21,4,38,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'White','Kristian',to_date('28-01-1939','dd-mm-yyyy'),23,4,39,5,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Parker','Aron',to_date('28-10-1942','dd-mm-yyyy'),22,5,40,6,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Montgomery','Oliver',to_date('28-10-1942','dd-mm-yyyy'),23,5,40,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Johnson','Tomas',to_date('04-05-1940','dd-mm-yyyy'),19,5,41,6,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Owens','David',to_date('07-06-1942','dd-mm-yyyy'),18,6,42,5,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Woods','Mason',to_date('15-10-1941','dd-mm-yyyy'),2,6,42,4,1);
+insert into Soldat values(incrementare_cod_soldat.nextval,'Ramirez','Tony',to_date('27-09-1942','dd-mm-yyyy'),20,6,43,4,1);
+
+insert into A_fost_decorat_cu values(1,1,to_date('09-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(1,14,to_date('24-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(1,33,to_date('12-05-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(2,1,to_date('08-02-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(2,26,to_date('28-09-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(2,7,to_date('12-05-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(2,5,to_date('30-11-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,16,to_date('07-01-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,32,to_date('14-07-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,47,to_date('08-02-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,89,to_date('09-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,54,to_date('15-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(3,23,to_date('08-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,46,to_date('24-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,37,to_date('28-09-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,68,to_date('30-11-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,39,to_date('17-12-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,62,to_date('19-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,19,to_date('08-02-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,6,to_date('07-01-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,86,to_date('27-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,71,to_date('27-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(4,44,to_date('09-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,13,to_date('14-07-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,87,to_date('15-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,52,to_date('30-11-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,74,to_date('08-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,42,to_date('01-05-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,18,to_date('19-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,19,to_date('15-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,26,to_date('28-09-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,39,to_date('07-01-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,65,to_date('12-05-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,48,to_date('17-12-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,95,to_date('27-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,57,to_date('08-08-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,64,to_date('08-02-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,35,to_date('17-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,3,to_date('17-03-1945','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,79,to_date('09-06-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,60,to_date('14-07-1944','dd-mm-yyyy'));
+insert into A_fost_decorat_cu values(5,20,to_date('19-03-1945','dd-mm-yyyy'));
+
+
+
+--6.
+--Afisati cati soldati fac parte din plutonul X si sunt ofiteri (maior,capitan,locotenent)
+--folosind 2 tabele in care tinem soldatii din plutonul 1 respectiv ofiterii
+CREATE OR REPLACE FUNCTION nr_ofiteri_plutonul_x
+  (pluton pluton.cod_pluton%type)
+RETURN NUMBER
+IS
+  nr_ofiteri_din_pluton number(3) :=0;
+  nr_soldati_din_pluton number(3) :=0;
+  --tablou indexat
+  type lista_soldati is table of soldat%rowtype index by pls_integer; 
+  soldati_plutonul_x lista_soldati; 
+  --tablou imbricat
+  type lista_ofiteri is table of soldat%rowtype;
+  ofiteri lista_ofiteri := lista_ofiteri();
+BEGIN
+  select count(*) into nr_soldati_din_pluton
+  from soldat
+  where cod_pluton = pluton;
+  
+  select * bulk collect into soldati_plutonul_x
+  from soldat
+  where cod_pluton = pluton;
+  
+  select * bulk collect into ofiteri
+  from soldat
+  where cod_rang = 6 or cod_rang = 7 or cod_rang = 8;
+  
+  for i in soldati_plutonul_x.FIRST..soldati_plutonul_x.LAST loop
+    for j in ofiteri.FIRST..ofiteri.LAST loop
+      if soldati_plutonul_x(i).cod_soldat = ofiteri(j).cod_soldat then
+        nr_ofiteri_din_pluton := nr_ofiteri_din_pluton + 1;
+      end if;
+    end loop;
+  end loop;
+  return nr_ofiteri_din_pluton;
+EXCEPTION
+  WHEN NO_DATA_FOUND then
+  RAISE_APPLICATION_ERROR(-20000, 'Nu exista plutonul dat');
+  WHEN OTHERS then
+  RAISE_APPLICATION_ERROR(-20001, 'Alta eroare');
+END nr_ofiteri_plutonul_x;
+/
+set serveroutput on;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(nr_ofiteri_plutonul_x(1));
+END;
+/
+
+--7.
+--Folosind un cursor afisati pentru fiecare pluton 
+--cati soldati are si media de varsta pe fiecare pluton 
+CREATE OR REPLACE PROCEDURE detalii_plutoane
+IS
+  plutonul pluton.cod_pluton%TYPE;
+  nr_soldati_pluton number(5);
+  varsta_medie float(10);
+  CURSOR cursor_detalii_plutoane is
+    select p.cod_pluton codul_plutonului, count(s.cod_soldat) nr_soldati, avg(s.varsta) medie_varsta
+    from pluton p, soldat s
+    where p.cod_pluton = s.cod_pluton(+)
+    group by p.cod_pluton;
+BEGIN
+  OPEN cursor_detalii_plutoane;
+  loop
+    fetch cursor_detalii_plutoane into plutonul,nr_soldati_pluton,varsta_medie;
+    exit when cursor_detalii_plutoane%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('In plutonul ' || plutonul || ' sunt ' || nr_soldati_pluton || ' soldati cu varsta medie de ' || varsta_medie || ' ani.');
+  end loop;
+  CLOSE cursor_detalii_plutoane;
+END detalii_plutoane;
+/
+set serveroutput on;
+BEGIN
+  detalii_plutoane;
+END;
+/
+
+
+--8.
+--Afisati arma pe care o foloseste soldatul cu un prenume dat
+CREATE OR REPLACE FUNCTION ce_arma_foloseste
+  (prenume_soldat soldat.prenume%TYPE DEFAULT 'Andrei-Adrian')
+RETURN VARCHAR2
+IS
+  cod_soldat_dat soldat.cod_soldat%TYPE;
+  nume_arma arma.nume_model%TYPE;
+BEGIN
+  select s.cod_soldat into cod_soldat_dat
+  from soldat s
+  where s.prenume = prenume_soldat;
+  
+  select a.nume_model into nume_arma
+  from soldat s, echipament e, arma a
+  where s.prenume = prenume_soldat and
+  s.cod_echipament = e.cod_echipament and
+  e.cod_arma = a.cod_arma;
+  
+  return nume_arma;
+EXCEPTION
+  WHEN NO_DATA_FOUND then
+  RAISE_APPLICATION_ERROR(-20000, 'Nu exista niciun soldat cu prenumele dat');
+  WHEN TOO_MANY_ROWS then
+  RAISE_APPLICATION_ERROR(-20001, 'Sunt mai multi soldati cu acelasi prenume');
+  WHEN OTHERS then
+  RAISE_APPLICATION_ERROR(-20002, 'Alta eroare');
+END ce_arma_foloseste;
+/
+
+set serveroutput on;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(ce_arma_foloseste);
+END;
+/
+set serveroutput on;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(ce_arma_foloseste('Jacob'));
+END;
+/
+set serveroutput on;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(ce_arma_foloseste('Nu exist'));
+END;
+/
+
+
+--9.
+--Afisati in ce regiune este stationat soldatul care foloseste echipamentul cu codul dat
+CREATE OR REPLACE PROCEDURE regiune_soldat
+  (echipament_dat echipament.cod_echipament%TYPE)
+IS
+  cod_soldat_dat soldat.cod_soldat%TYPE;
+  regiunea regiune.nume_regiune%TYPE;
+BEGIN
+  select s.cod_soldat into cod_soldat_dat
+  from soldat s
+  where s.cod_echipament = echipament_dat;
+  
+  select r.nume_regiune into regiunea
+  from soldat s, pluton p, oras o, tara t, regiune r
+  where s.cod_echipament = echipament_dat and
+  s.cod_pluton = p.cod_pluton and
+  p.cod_oras = o.cod_oras and
+  o.cod_tara = t.cod_tara and
+  t.cod_regiune = r.cod_regiune;
+  DBMS_OUTPUT.PUT_LINE(regiunea);
+EXCEPTION
+  WHEN NO_DATA_FOUND then
+  RAISE_APPLICATION_ERROR(-20000, 'Nu exista niciu soldat care foloseste echipamentul cu codul dat');
+  WHEN TOO_MANY_ROWS then
+  RAISE_APPLICATION_ERROR(-20001, 'Sunt mai multi soldati care folosesc acelasi echipament');
+  WHEN OTHERS then
+  RAISE_APPLICATION_ERROR(-20002, 'Alta eroare');
+END regiune_soldat;
+/
+
+
+set serveroutput on;
+BEGIN
+  regiune_soldat(2);
+END;
+/
+set serveroutput on;
+BEGIN
+  regiune_soldat(3);
+END;
+/
+set serveroutput on;
+BEGIN
+  regiune_soldat(9);
+END;
+/
+
+--10
+--Trigger care sa nu permita modificarea datelor din tabelul soldat daca sunt efectuate in week-end(sambata/duminica) sau joia
+CREATE OR REPLACE TRIGGER trigger_sambata_si_duminica
+  BEFORE INSERT OR UPDATE OR DELETE ON soldat
+BEGIN
+  if TO_CHAR(SYSDATE, 'D') = 1 then
+    RAISE_APPLICATION_ERROR(-20000,'tabelul SOLDAT nu poate fi actualizat duminica');
+  elsif TO_CHAR(SYSDATE, 'D') = 7 then
+    RAISE_APPLICATION_ERROR(-20001,'tabelul SOLDAT nu poate fi actualizat sambata');
+  elsif TO_CHAR(SYSDATE, 'D') = 5 then
+    RAISE_APPLICATION_ERROR(-20002,'tabelul SOLDAT nu poate fi actualizat joia');
+  end if;
+END;
+/
+
+DROP TRIGGER trigger_sambata_si_duminica;
+
+
+--11
+--Trigger care sa nu permita micsorarea varstei unui soldat
+CREATE OR REPLACE TRIGGER trigger_micsorare_varsta
+  BEFORE UPDATE OF varsta ON soldat
+  FOR EACH ROW
+  WHEN (NEW.varsta < OLD.varsta)
+BEGIN
+  RAISE_APPLICATION_ERROR(-20000,'varsta unui soldat nu poate fi micsorata');
+END;
+/
+
+update soldat
+set varsta = varsta-1;
+DROP TRIGGER trigger_micsorare_varsta;
+
+
+--12
+--Trigger care afiseaza date despre instructiunile apelate
+CREATE OR REPLACE TRIGGER trigger_date_utilizator
+  AFTER CREATE OR DROP OR ALTER ON SCHEMA
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Utilizator: ' || SYS.LOGIN_USER);
+    DBMS_OUTPUT.PUT_LINE('Comanda Folosita: ' || SYS.SYSEVENT);
+    DBMS_OUTPUT.PUT_LINE('Numele Tabelului Afectat: ' || SYS.DICTIONARY_OBJ_NAME);
+    DBMS_OUTPUT.PUT_LINE('Data: ' || SYSDATE);
+end;
+/
+create table test (id_test number(3), alta_data number(4));
+drop table test;
+DROP TRIGGER trigger_date_utilizator; 
+
+
+--13
+CREATE OR REPLACE PACKAGE pachet_simplu AS
+  FUNCTION nr_ofiteri_plutonul_x_pct(pluton pluton.cod_pluton%type)
+    RETURN NUMBER;
+  PROCEDURE detalii_plutoane_pct;
+  FUNCTION ce_arma_foloseste_pct(prenume_soldat soldat.prenume%TYPE DEFAULT 'Andrei-Adrian')
+    RETURN VARCHAR2;
+  PROCEDURE regiune_soldat_pct(echipament_dat echipament.cod_echipament%TYPE);
+END pachet_simplu;
+/
+CREATE OR REPLACE PACKAGE BODY pachet_simplu AS
+  FUNCTION nr_ofiteri_plutonul_x_pct(pluton pluton.cod_pluton%type)
+  RETURN NUMBER
+  IS
+    nr_ofiteri_din_pluton number(3) :=0;
+    nr_soldati_din_pluton number(3) :=0;
+    --tablou indexat
+    type lista_soldati is table of soldat%rowtype index by pls_integer; 
+    soldati_plutonul_x lista_soldati; 
+    --tablou imbricat
+    type lista_ofiteri is table of soldat%rowtype;
+    ofiteri lista_ofiteri := lista_ofiteri();
+  BEGIN
+    select count(*) into nr_soldati_din_pluton
+    from soldat
+    where cod_pluton = pluton;
+    
+    select * bulk collect into soldati_plutonul_x
+    from soldat
+    where cod_pluton = pluton;
+    
+    select * bulk collect into ofiteri
+    from soldat
+    where cod_rang = 6 or cod_rang = 7 or cod_rang = 8;
+    
+    for i in soldati_plutonul_x.FIRST..soldati_plutonul_x.LAST loop
+      for j in ofiteri.FIRST..ofiteri.LAST loop
+        if soldati_plutonul_x(i).cod_soldat = ofiteri(j).cod_soldat then
+          nr_ofiteri_din_pluton := nr_ofiteri_din_pluton + 1;
+        end if;
+      end loop;
+    end loop;
+    return nr_ofiteri_din_pluton;
+  EXCEPTION
+    WHEN NO_DATA_FOUND then
+    RAISE_APPLICATION_ERROR(-20000, 'Nu exista plutonul dat');
+    WHEN OTHERS then
+    RAISE_APPLICATION_ERROR(-20001, 'Alta eroare');
+  END nr_ofiteri_plutonul_x_pct;
+  
+  PROCEDURE detalii_plutoane_pct
+  IS
+    plutonul pluton.cod_pluton%TYPE;
+    nr_soldati_pluton number(5);
+    varsta_medie float(10);
+    CURSOR cursor_detalii_plutoane is
+      select p.cod_pluton codul_plutonului, count(s.cod_soldat) nr_soldati, avg(s.varsta) medie_varsta
+      from pluton p, soldat s
+      where p.cod_pluton = s.cod_pluton(+)
+      group by p.cod_pluton;
+  BEGIN
+    OPEN cursor_detalii_plutoane;
+    loop
+      fetch cursor_detalii_plutoane into plutonul,nr_soldati_pluton,varsta_medie;
+      exit when cursor_detalii_plutoane%NOTFOUND;
+      DBMS_OUTPUT.PUT_LINE('In plutonul ' || plutonul || ' sunt ' || nr_soldati_pluton || ' soldati cu varsta medie de ' || varsta_medie || ' ani.');
+    end loop;
+    CLOSE cursor_detalii_plutoane;
+  END detalii_plutoane_pct;
+  
+  FUNCTION ce_arma_foloseste_pct(prenume_soldat soldat.prenume%TYPE DEFAULT 'Andrei-Adrian')
+  RETURN VARCHAR2
+  IS
+    cod_soldat_dat soldat.cod_soldat%TYPE;
+    nume_arma arma.nume_model%TYPE;
+  BEGIN
+    select s.cod_soldat into cod_soldat_dat
+    from soldat s
+    where s.prenume = prenume_soldat;
+    
+    select a.nume_model into nume_arma
+    from soldat s, echipament e, arma a
+    where s.prenume = prenume_soldat and
+    s.cod_echipament = e.cod_echipament and
+    e.cod_arma = a.cod_arma;
+    
+    return nume_arma;
+  EXCEPTION
+    WHEN NO_DATA_FOUND then
+    RAISE_APPLICATION_ERROR(-20000, 'Nu exista niciun soldat cu prenumele dat');
+    WHEN TOO_MANY_ROWS then
+    RAISE_APPLICATION_ERROR(-20001, 'Sunt mai multi soldati cu acelasi prenume');
+    WHEN OTHERS then
+    RAISE_APPLICATION_ERROR(-20002, 'Alta eroare');
+  END ce_arma_foloseste_pct;
+  
+  PROCEDURE regiune_soldat_pct(echipament_dat echipament.cod_echipament%TYPE)
+  IS
+    cod_soldat_dat soldat.cod_soldat%TYPE;
+    regiunea regiune.nume_regiune%TYPE;
+  BEGIN
+    select s.cod_soldat into cod_soldat_dat
+    from soldat s
+    where s.cod_echipament = echipament_dat;
+    
+    select r.nume_regiune into regiunea
+    from soldat s, pluton p, oras o, tara t, regiune r
+    where s.cod_echipament = echipament_dat and
+    s.cod_pluton = p.cod_pluton and
+    p.cod_oras = o.cod_oras and
+    o.cod_tara = t.cod_tara and
+    t.cod_regiune = r.cod_regiune;
+    DBMS_OUTPUT.PUT_LINE(regiunea);
+  EXCEPTION
+    WHEN NO_DATA_FOUND then
+    RAISE_APPLICATION_ERROR(-20000, 'Nu exista niciu soldat care foloseste echipamentul cu codul dat');
+    WHEN TOO_MANY_ROWS then
+    RAISE_APPLICATION_ERROR(-20001, 'Sunt mai multi soldati care folosesc acelasi echipament');
+    WHEN OTHERS then
+    RAISE_APPLICATION_ERROR(-20002, 'Alta eroare');
+  END regiune_soldat_pct;
+END pachet_simplu;
+/
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(pachet_simplu.nr_ofiteri_plutonul_x_pct(1));
+  pachet_simplu.detalii_plutoane_pct;
+  DBMS_OUTPUT.PUT_LINE(pachet_simplu.ce_arma_foloseste_pct('Alan'));
+  pachet_simplu.regiune_soldat_pct(2);
+END;
+/
+--14
+--Tip Date Tablou Imbricat in care tin minte indicii plutoanelor
+--Tip Date Record in care tinem minte informatii despre perechea rezultatelor la functie
+--Tip Date Record in care tinem minte informatii despre toti soldatii din plutonul respectiv(cod_soldat, nume, prenume, cod_superior)
+--Tip Date Tablou Indexat In care pentru fiecare pluton tinem minte detalii despre toti soldatii
+--Tip Date Tablou Imbricat in care tinem minte rezultatele pentru fiecare apel al functiei Aflare Cel Mai Mare Superior ca record pereche(soldat, superior maximi)
+--Functie Aflare Pluton
+--Functie Aflare numar de medalii
+--Functie Aflare Superior direct (SE TOT APELEAZA in functia complexa PANA CAND SE AJUNGE LA cineva care nu are superior direct)
+--Procedura inserare coduri plutoane in vector;
+--Procedura inserare date in tabelul detalii_plutoane care isi creeaza un tabel local de tipul "detalii_soldati"
+--Functie Complexa Aflare superior maxim al unui soldat dat dupa Id care sa fie in acelasi pluton
+--cu el si sa se afiseze cate medalii a castigat si insereaza intr-un tabel rezultatele
+CREATE OR REPLACE PACKAGE pachet_complex AS
+  TYPE pereche_rezultat is record
+                         (cod_soldat soldat.cod_soldat%type, 
+                         nume_soldat soldat.nume%type,
+                         prenume_soldat soldat.prenume%type,
+                         cod_superior soldat.cod_soldat%type, 
+                         nume_superior soldat.nume%type,
+                         prenume_superior soldat.prenume%type);
+  TYPE rezultate_cmms IS TABLE OF pereche_rezultat;
+  rezultate rezultate_cmms:= rezultate_cmms();
+  TYPE date_importante_soldat is record
+                         (cod_soldat soldat.cod_soldat%type, 
+                         nume_soldat soldat.nume%type,
+                         prenume_soldat soldat.prenume%type,
+                         cod_superior soldat.cod_soldat%type, 
+                         numar_medalii NUMBER);
+  TYPE detalii_soldati IS TABLE OF date_importante_soldat INDEX BY PLS_INTEGER;
+  TYPE detalii_pluton IS record
+                         (cod_pluton pluton.cod_pluton%type,
+                         soldati detalii_soldati);
+  TYPE tabel_detalii_plutoane IS TABLE OF detalii_pluton INDEX BY PLS_INTEGER;
+  detalii_plutoane tabel_detalii_plutoane;
+  TYPE cod_plut IS TABLE OF NUMBER;
+  coduri_plutoane cod_plut :=cod_plut();
+  PROCEDURE inserare_coduri_plut;
+  PROCEDURE inserare_det_plutoane;
+  FUNCTION aflare_pluton(id_soldat soldat.cod_soldat%type) RETURN NUMBER;
+  FUNCTION aflare_numar_medalii(id_soldat soldat.cod_soldat%type) RETURN NUMBER;
+  FUNCTION aflare_superior_direct(id_soldat soldat.cod_soldat%type) RETURN NUMBER;
+  FUNCTION aflare_superior_max(id_soldat soldat.cod_soldat%type) RETURN NUMBER;
+END pachet_complex;
+/
+CREATE OR REPLACE PACKAGE BODY pachet_complex AS
+  PROCEDURE inserare_coduri_plut
+  IS
+  BEGIN
+    select cod_pluton
+    bulk collect into coduri_plutoane
+    from pluton;
+  END inserare_coduri_plut;
+  
+  PROCEDURE inserare_det_plutoane
+  IS
+    det_sold detalii_soldati;
+    dat_imp_sold date_importante_soldat;
+    nr_sold_din_plut number(3);
+  BEGIN
+    for i in coduri_plutoane.first..coduri_plutoane.last loop
+        select s.cod_soldat, s.nume, s.prenume, s.cod_superior_direct, aflare_numar_medalii(s.cod_soldat)
+        bulk collect into det_sold
+        from soldat s
+        where cod_pluton = coduri_plutoane(i);
+        detalii_plutoane(i).cod_pluton := coduri_plutoane(i);
+        detalii_plutoane(i).soldati := det_sold;
+    end loop;
+  END inserare_det_plutoane;
+  
+  FUNCTION aflare_pluton(id_soldat soldat.cod_soldat%type) 
+  RETURN NUMBER
+  IS 
+    rezultat NUMBER(2);
+  BEGIN
+    select cod_pluton
+    into rezultat
+    from soldat s
+    where id_soldat = s.cod_soldat;
+    return rezultat;
+  EXCEPTION
+    WHEN NO_DATA_FOUND then
+    RAISE_APPLICATION_ERROR(-20000, 'Nu exista soldatul dat');
+    WHEN OTHERS then
+    RAISE_APPLICATION_ERROR(-20001, 'Alta eroare');
+  END aflare_pluton;
+  
+  FUNCTION aflare_numar_medalii(id_soldat soldat.cod_soldat%type) 
+  RETURN NUMBER
+  IS
+    rezultat NUMBER(2);
+  BEGIN
+    select count(*)
+    into rezultat
+    from a_fost_decorat_cu 
+    where cod_soldat=id_soldat;
+    return rezultat;
+  END aflare_numar_medalii;
+  
+  FUNCTION aflare_superior_direct(id_soldat soldat.cod_soldat%type) 
+  RETURN NUMBER
+  IS
+    rezultat NUMBER(3);
+  BEGIN
+    select cod_superior_direct
+    into rezultat
+    from soldat
+    where cod_soldat=id_soldat;
+    return rezultat;
+  END aflare_superior_direct;
+  
+  FUNCTION aflare_superior_max(id_soldat soldat.cod_soldat%type) 
+  RETURN NUMBER
+  IS
+    de_inserat pereche_rezultat;
+    soldat_curent NUMBER(3);
+    pluton_curent NUMBER(2);
+    superior NUMBER(3);
+    ok NUMBER(1);
+    numar_medalii NUMBER(2);
+  BEGIN
+    select cod_soldat, nume, prenume
+    into de_inserat.cod_soldat, de_inserat.nume_soldat, de_inserat.prenume_soldat
+    from soldat
+    where cod_soldat = id_soldat;
+    de_inserat.cod_superior:=de_inserat.cod_soldat;
+    de_inserat.nume_superior:=de_inserat.nume_soldat;
+    de_inserat.prenume_superior:=de_inserat.prenume_soldat;
+    ok:=1;
+    
+    soldat_curent := id_soldat;
+    pluton_curent := aflare_pluton(id_soldat);
+    for i in detalii_plutoane.first..detalii_plutoane.last loop
+      if detalii_plutoane(i).cod_pluton = pluton_curent then
+        while ok=1 loop
+          ok:=0;
+          superior:=aflare_superior_direct(soldat_curent);
+          for j in detalii_plutoane(i).soldati.first..detalii_plutoane(i).soldati.last loop
+            if detalii_plutoane(i).soldati(j).cod_soldat = superior then
+              ok:=1;
+              soldat_curent := superior;
+              de_inserat.cod_superior:=detalii_plutoane(i).soldati(j).cod_soldat;
+              de_inserat.nume_superior:=detalii_plutoane(i).soldati(j).nume_soldat;
+              de_inserat.prenume_superior:=detalii_plutoane(i).soldati(j).prenume_soldat;
+              numar_medalii:=detalii_plutoane(i).soldati(j).numar_medalii;
+            end if;
+          end loop;
+        end loop;
+      end if;
+    end loop;
+    DBMS_OUTPUT.PUT_LINE(numar_medalii);
+    return soldat_curent;
+  END aflare_superior_max;
+END pachet_complex;
+/
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.aflare_pluton(15));
+  pachet_complex.inserare_coduri_plut;
+  pachet_complex.inserare_det_plutoane;
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.coduri_plutoane(5));
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.aflare_numar_medalii(33));
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.aflare_superior_direct(41));
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.detalii_plutoane(1).soldati(4).nume_soldat);
+  DBMS_OUTPUT.PUT_LINE(pachet_complex.aflare_superior_max(30));
+END;
+/
